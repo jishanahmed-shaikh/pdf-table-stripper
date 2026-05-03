@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-table-stripper"
+version = "1.0.0"
+description = "Extract tabular data from messy PDFs into clean CSVs using pdfplumber"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Jishanahmed AR Shaikh", email = "jishanahmedshaikh@gmail.com" }]
+keywords = ["pdf", "table", "extract", "csv", "pdfplumber", "data", "finance"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Text Processing",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+pdf  = ["pdfplumber>=0.9"]
+dev  = ["pytest>=7.0"]
+full = ["pdfplumber>=0.9"]
+
+[project.scripts]
+pdfstrip = "pdfstripper.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/jishanahmed-shaikh/pdf-table-stripper"
+Issues   = "https://github.com/jishanahmed-shaikh/pdf-table-stripper/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v --tb=short"
