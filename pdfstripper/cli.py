@@ -60,9 +60,9 @@ def main(argv=None) -> None:
     )
     parser.add_argument(
         "--format", "-f",
-        choices=["csv", "json"],
+        choices=["csv", "json", "excel"],
         default="csv",
-        help="Output format: csv or json (default: csv)",
+        help="Output format: csv, json or excel (default: csv)",
     )
     parser.add_argument(
         "--mock",
@@ -121,6 +121,17 @@ def main(argv=None) -> None:
     if args.format == "json":
         print(tables_to_json(tables))
         return
+    
+    elif args.format == "excel":
+        from pdfstripper.writer import tables_to_excel
+        output_path = Path(args.output) / "all_tables.xlsx"
+        tables_to_excel(tables, output_path)
+        if not args.quiet:
+            g = _GREEN if use_color else ""
+            r = _RESET if use_color else ""
+            print(f"  {g}Written:{r} {output_path}")
+        return
+
 
     paths = tables_to_csv(
         tables,

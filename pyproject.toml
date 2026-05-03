@@ -23,6 +23,7 @@ dependencies = []
 pdf  = ["pdfplumber>=0.9"]
 dev  = ["pytest>=7.0"]
 full = ["pdfplumber>=0.9"]
+excel = ["openpyxl>=3.0"]
 
 [project.scripts]
 pdfstrip = "pdfstripper.cli:main"

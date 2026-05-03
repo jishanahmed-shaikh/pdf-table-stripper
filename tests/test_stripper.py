@@ -21,8 +21,11 @@ from pdfstripper.writer import (
     table_to_csv_string,
     tables_to_csv,
     tables_to_json,
+    tables_to_excel,
     _safe_filename,
 )
+
+from openpyxl import load_workbook
 
 
 # ---------------------------------------------------------------------------
@@ -223,3 +226,66 @@ class TestWriter:
         name = _safe_filename("my report (2026).pdf", 2, 1)
         assert ".csv" in name
         assert "page2" in name
+
+    def test_tables_to_excel_creates_files(self):
+        tables = MockPDFExtractor.extract()
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "out.xlsx")
+            tables_to_excel(tables, out)
+            assert os.path.exists(out)
+
+    def test_tables_to_excel_requires_dependency(self):
+        tables = MockPDFExtractor.extract()
+
+        import sys
+        from unittest import mock
+
+        with mock.patch.dict(sys.modules, {"openpyxl": None}):
+            with pytest.raises(RuntimeError):
+                tables_to_excel(tables, "out.xlsx")
+
+    def test_excel_content(self):
+        tables = MockPDFExtractor.extract()
+
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "out.xlsx")
+            tables_to_excel(tables, out)
+
+            wb = load_workbook(out)
+            sheets = wb.sheetnames
+
+            assert len(sheets) == len(tables)
+
+            ws = wb[sheets[0]]
+            assert ws.cell(row=1, column=1).value is not None
+
+    def test_excel_headers_are_bold(self):
+        tables = MockPDFExtractor.extract()
+
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "out.xlsx")
+            tables_to_excel(tables, out)
+
+            wb = load_workbook(out)
+            ws = wb[wb.sheetnames[0]]
+
+            for col_idx in range(1, len(tables[0].headers) + 1):
+                cell = ws.cell(row=1, column=col_idx)
+                assert cell.font.bold is True
+
+    def test_excel_sheet_name_truncation(self):
+        long_table = Table(
+            page_number=1,
+            table_index=0,
+            headers=["a"],
+            rows=[],
+            source_file="very_long_filename_that_exceeds_normal_limits.pdf"
+        )
+
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "out.xlsx")
+            tables_to_excel([long_table], out)
+
+            wb = load_workbook(out)
+
+            assert len(wb.sheetnames[0]) <= 31

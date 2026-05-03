@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import csv
 import json
-import os
 from pathlib import Path
 from typing import List, Optional
 
@@ -150,3 +149,32 @@ def tables_to_json(tables: List[Table]) -> str:
         for t in tables
     ]
     return json.dumps(data, indent=2, ensure_ascii=False)
+
+
+def tables_to_excel(tables: List[Table], output_path: str | Path) -> None:
+    """ Export tables to an Excel file with one sheet per table. """
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font
+    except ImportError:
+        raise RuntimeError("Excel support requires openpyxl. Install with: pip install 'pdf-table-stripper[excel]'")
+    
+    wb = Workbook()
+    wb.remove(wb.active)  # Remove default sheet
+
+    for table in tables:
+        sheet_name = f"Page{table.page_number}_Table{table.table_index + 1}"
+        ws = wb.create_sheet(title=sheet_name[:31])  # Excel sheet names max 31 chars
+
+        # Write headers
+        if table.headers:
+            for col_idx, header in enumerate(table.headers, start=1):
+                cell = ws.cell(row=1, column=col_idx, value=header)
+                cell.font = Font(bold=True)
+            
+        # Write data
+        for row_idx, row in enumerate(table.rows, start=2 if table.headers else 1):
+            for col_idx, cell_value in enumerate(row, start=1):
+                ws.cell(row=row_idx, column=col_idx, value=cell_value)
+
+    wb.save(output_path)
