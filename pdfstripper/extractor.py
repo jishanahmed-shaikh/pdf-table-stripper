@@ -82,6 +82,33 @@ def _drop_empty_rows(rows: List[List[str]]) -> List[List[str]]:
 
 
 # ---------------------------------------------------------------------------
+# Post-process tables
+# ---------------------------------------------------------------------------
+
+def _filter_tables(
+    tables: List[Table],
+    min_rows: int,
+) -> List[Table]:
+    """Filters out tables with row counts below `min_rows` (if defined).
+
+    Parameters
+    ----------
+    tables:
+       All tables found in the PDF.
+    min_rows:
+        Minimum rows in a table required to not be filtered.
+
+    Returns
+    -------
+    List[Table]
+        Tables found in the PDF with row counts of at least `min_rows`.
+    """
+    if min_rows is not None:
+        tables = [t for t in tables if t.row_count >= min_rows]
+    return tables
+
+
+# ---------------------------------------------------------------------------
 # Real extractor (requires pdfplumber)
 # ---------------------------------------------------------------------------
 
@@ -219,6 +246,7 @@ class MockPDFExtractor:
 def extract_tables(
     pdf_path: str,
     pages: Optional[List[int]] = None,
+    min_rows: Optional[int] = None,
     use_mock: bool = False,
 ) -> List[Table]:
     """Extract all tables from a PDF file.
@@ -227,6 +255,8 @@ def extract_tables(
     :class:`MockPDFExtractor` if ``pdfplumber`` is not available or
     ``use_mock=True`` is passed.
 
+    Filters out tables with row counts below `min_rows` (if defined). 
+
     Parameters
     ----------
     pdf_path:
@@ -234,6 +264,8 @@ def extract_tables(
     pages:
         1-indexed list of page numbers to process.  ``None`` = all pages.
         Only used with the real pdfplumber extractor.
+    min_rows : optional
+        Minimum rows in a table required to extract it.
     use_mock:
         Force use of the mock extractor (useful for testing).
 
@@ -253,11 +285,16 @@ def extract_tables(
         tables = extract_tables("statement.pdf")
     """
     if use_mock:
-        return MockPDFExtractor.extract(source_file=pdf_path)
-
+        return _filter_tables(
+            MockPDFExtractor.extract(source_file=pdf_path),
+            min_rows=min_rows
+        )
     try:
         import pdfplumber  # noqa: F401
-        return _extract_with_pdfplumber(pdf_path, pages=pages)
+        return _filter_tables(
+            _extract_with_pdfplumber(pdf_path, pages=pages),
+            min_rows=min_rows
+        )
     except ImportError:
         # pdfplumber not installed — use mock and warn
         import sys
@@ -266,4 +303,7 @@ def extract_tables(
             "Install it with: pip install 'pdf-table-stripper[pdf]'",
             file=sys.stderr,
         )
-        return MockPDFExtractor.extract(source_file=pdf_path)
+        return _filter_tables(
+            MockPDFExtractor.extract(source_file=pdf_path),
+            min_rows=min_rows
+        )

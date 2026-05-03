@@ -49,6 +49,13 @@ def main(argv=None) -> None:
         help="Page numbers to extract (default: all pages)",
     )
     parser.add_argument(
+        "--min-rows",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Minimum rows in a table required to extract it",
+    )
+    parser.add_argument(
         "--single-file",
         action="store_true",
         help="Write all tables to a single CSV instead of one per table",
@@ -103,14 +110,14 @@ def main(argv=None) -> None:
         mode = f"{_YELLOW}MOCK{_RESET}" if (args.mock and use_color) else ("MOCK" if args.mock else pdf_path)
         print(f"\n  {b}pdf-table-stripper{r} — {mode}", file=sys.stderr)
 
-    tables = extract_tables(pdf_path, pages=args.pages, use_mock=args.mock)
+    tables = extract_tables(pdf_path, pages=args.pages, min_rows=args.min_rows, use_mock=args.mock)
 
     if not tables:
         print("  No tables found.", file=sys.stderr)
         sys.exit(0)
 
     if not args.quiet:
-        print(f"  Found {len(tables)} table(s):", file=sys.stderr)
+        print(f"  Extracted {len(tables)} table(s):", file=sys.stderr)
         for t in tables:
             print(f"    {t.summary()}", file=sys.stderr)
         print(file=sys.stderr)
