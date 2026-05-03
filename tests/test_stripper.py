@@ -153,6 +153,12 @@ class TestMockExtractor:
         tables = extract_tables("any.pdf", use_mock=True)
         assert len(tables) >= 2
 
+    def test_extract_tables_min_rows(self):
+        tables = extract_tables("any.pdf", use_mock=True, min_rows=7)
+        assert len(tables) == 2
+        tables = extract_tables("any.pdf", use_mock=True, min_rows=8)
+        assert len(tables) == 1
+
     def test_extract_tables_fallback_without_pdfplumber(self):
         # Without pdfplumber installed, should fall back to mock
         import sys

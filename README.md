@@ -40,6 +40,9 @@ Requires [pdfplumber](https://github.com/jsvine/pdfplumber) for real PDF extract
 # Extract all tables from a PDF
 pdfstrip statement.pdf
 
+# Only extract tables with at least 3 data rows from a PDF
+pdfstrip statement.pdf --min-rows 3
+
 # Extract to a specific directory
 pdfstrip statement.pdf --output ./csv_output
 
@@ -65,7 +68,7 @@ pdfstrip --mock
 
 ```
   pdf-table-stripper — statement.pdf
-  Found 3 table(s):
+  Extracted 3 table(s):
     Page 1, Table 1: 9 rows x 5 cols
     Page 1, Table 2: 7 rows x 2 cols
     Page 2, Table 1: 3 rows x 3 cols
