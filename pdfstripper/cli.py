@@ -124,6 +124,7 @@ def main(argv=None) -> None:
     
     elif args.format == "excel":
         from pdfstripper.writer import tables_to_excel
+        Path(args.output).mkdir(parents=True, exist_ok=True)
         output_path = Path(args.output) / "all_tables.xlsx"
         tables_to_excel(tables, output_path)
         if not args.quiet:

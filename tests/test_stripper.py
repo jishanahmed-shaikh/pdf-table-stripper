@@ -7,6 +7,9 @@ import tempfile
 
 import pytest
 
+openpyxl = pytest.importorskip("openpyxl")
+load_workbook = openpyxl.load_workbook
+
 from pdfstripper.models import Table, TableRow
 from pdfstripper.extractor import (
     MockPDFExtractor,
@@ -24,8 +27,6 @@ from pdfstripper.writer import (
     tables_to_excel,
     _safe_filename,
 )
-
-from openpyxl import load_workbook
 
 
 # ---------------------------------------------------------------------------
